@@ -2,6 +2,9 @@ import unidecode
 import string
 import re
 
+from spacy.lang.fr.stop_words import STOP_WORDS as fr_stop
+from spacy.lang.en.stop_words import STOP_WORDS as en_stop
+
 def convert_to_lowercase(text: str) -> str:
     return text.lower()
 
@@ -26,14 +29,13 @@ def normalize_text(text: str) -> str:
     return text
 
 
-def remove_stop_words(text: str, stop_words_list: list) -> str:
+def remove_stop_words(text: str) -> str:
+    stop_words_list = list(fr_stop) + list(en_stop)
     useful_words = ' '.join([token for token in text.split(' ') if not token in stop_words_list])
     return useful_words
 
 
-def clean_text(stop_words_list: [str]):
-    def apply_to_sentence(text: str) -> str:
-        text = normalize_text(text)
-        text = remove_stop_words(text, stop_words_list)
-        return text
-    return apply_to_sentence
+def clean_text(text: str) -> str:
+    text = normalize_text(text)
+    text = remove_stop_words(text)
+    return text
