@@ -5,6 +5,11 @@ import re
 from spacy.lang.fr.stop_words import STOP_WORDS as fr_stop
 from spacy.lang.en.stop_words import STOP_WORDS as en_stop
 
+import en_core_web_sm
+
+global NLP
+NLP = en_core_web_sm.load()
+
 def convert_to_lowercase(text: str) -> str:
     return text.lower()
 
@@ -29,13 +34,26 @@ def normalize_text(text: str) -> str:
     return text
 
 
-def remove_stop_words(text: str) -> str:
+def remove_stop_words(text):
     stop_words_list = list(fr_stop) + list(en_stop)
-    useful_words = ' '.join([token for token in text.split(' ') if not token in stop_words_list])
-    return useful_words
+    useful_words_list = [token for token in text if not token.text in stop_words_list]
+    return useful_words_list
+
+
+def lemmatize(text):
+    text = ' '.join([token.lemma_ for token in text])
+    return text
+
+
+def remove_stop_words_and_lemmatize(text):
+    stop_words_list = list(fr_stop) + list(en_stop)
+    new_text = ' '.join(token.lemma_ for token in text if not token.text in stop_words_list)
+    return new_text
 
 
 def clean_text(text: str) -> str:
     text = normalize_text(text)
-    text = remove_stop_words(text)
+    #text = remove_stop_words(NLP(text))
+    #text = lemmatize(text)
+    text = remove_stop_words_and_lemmatize(NLP(text))
     return text
