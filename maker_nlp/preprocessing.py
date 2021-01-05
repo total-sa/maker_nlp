@@ -18,9 +18,22 @@ def remove_spaces_and_new_lines(text: str) -> str:
     return re.sub('\s+',' ', text).strip()
     
 
-def clean_text(text: str) -> str:
+def normalize_text(text: str) -> str:
     text = convert_to_lowercase(text)
     text = remove_accents(text)
     text = remove_ponctuation_and_digits(text)
     text = remove_spaces_and_new_lines(text)
     return text
+
+
+def remove_stop_words(text: str, stop_words_list: list) -> str:
+    useful_words = ' '.join([token for token in text.split(' ') if not token in stop_words_list])
+    return useful_words
+
+
+def clean_text(stop_words_list: [str]):
+    def apply_to_sentence(text: str):
+        text = normalize_text(text)
+        text = remove_stop_words(text, stop_words_list)
+        return text
+    return apply_to_sentence
