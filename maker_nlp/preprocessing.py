@@ -1,6 +1,7 @@
 import unidecode
 import string
 import re
+import numpy as np
 
 import en_core_web_sm
 
@@ -55,4 +56,6 @@ def remove_stop_words_and_lemmatize(text):
 def clean_text(text: str) -> str:
     text = normalize_text(text)
     text = remove_stop_words_and_lemmatize(NLP(text))
+    if len(text.split(' ')) < 2:
+        text = np.nan
     return text
