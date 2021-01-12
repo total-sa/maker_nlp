@@ -86,8 +86,6 @@ def get_top_k_words_tfidf(dataframe: pd.DataFrame, vectorizer, k: int):
     for i in range(data.shape[0]):
         row = data.getrow(i).toarray()[0].ravel()
         max_tfidf_list[[x for x in row.argsort()[-5:] if row[x] > 0.2]] += 1
-        temp = [(row[x], inverse_dict[x]) for x in row.argsort()[-5:] if row[x] > 0.2]
-        print(temp)
 
     top_10_indices = np.argsort(max_tfidf_list)[-k:][::-1]
     top_10_values = max_tfidf_list[top_10_indices]
