@@ -92,3 +92,64 @@ def get_top_k_words_tfidf(dataframe: pd.DataFrame, vectorizer, k: int):
 
     top_10_words = [inverse_dict[j] for j in top_10_indices]
     return pd.DataFrame({'words': top_10_words, 'importance': top_10_values})
+
+
+## These functions plot top k words with the help of idf vector
+def plot_top_k_explicative_words_per_sentiment(corpus: pd.DataFrame, labels: pd.Series, k: int = 20):
+    fig, axes = plt.subplots(1, 3, figsize=(20, 10))
+
+    vectorizer = TfidfVectorizer().fit(corpus)
+
+    for axe_index, sentiment in enumerate(CLASS_NAMES):
+        sentiment_related_phrases = corpus[labels == CLASS_DICT[sentiment]]
+
+        #top_k_related_sentiment = get_top_k_words_tfidf(sentiment_related_phrases, vectorizer, k=k)
+        top_k_related_sentiment = _get_top_k_words(sentiment_related_phrases, vectorizer, k)
+
+        # Ploting figures
+        top_k_words = top_k_related_sentiment['words'].values
+        top_k_words_position = top_k_related_sentiment.index.to_list()
+        top_k_importance = top_k_related_sentiment['importance'].values
+
+        axes[axe_index].barh(top_k_words_position,
+                             top_k_importance,
+                             align='center')
+        axes[axe_index].set_yticks(top_k_words_position)
+        axes[axe_index].set_yticklabels(top_k_words)
+        axes[axe_index].invert_yaxis()
+        axes[axe_index].set_xlabel('Importance')
+        axes[axe_index].set_title(f'Most important words related to sentiment : {sentiment.upper()}')
+
+
+def _get_sentiment_idf_dataframe(corpus: pd.DataFrame, vectorizer):
+    vect_neg = TfidfVectorizer()
+    vect_neg.fit(corpus)
+    neg_inverse_dict = {val: key for key, val in vect_neg.vocabulary_.items()}
+
+    inverse_dict = {val: key for key, val in vectorizer.vocabulary_.items()}
+    idf_df = pd.DataFrame([[inverse_dict[i], x] for i, x in enumerate(vectorizer.idf_)], columns=['word', 'idf_score'])
+    idf_df = idf_df.sort_values(by='idf_score', ascending=False).reset_index().drop(columns=['index'])
+
+    return idf_df, neg_inverse_dict
+
+
+def _get_top_k_words(corpus: pd.DataFrame, vectorizer, k: int):
+    count_neg = CountVectorizer()
+    counts = count_neg.fit_transform(corpus)
+    counts = counts.sum(axis=0).reshape((-1, 1))
+
+    top_neg_words = []
+    top_importance = []
+
+    idf_df, neg_inverse_dict = _get_sentiment_idf_dataframe(corpus, vectorizer)
+    counts_df = pd.DataFrame([[neg_inverse_dict[i], x[0, 0]] for i, x in enumerate(counts)], columns=['word', 'count'])
+    counts_df = counts_df[counts_df['count'] > 4]
+
+    for index, (word, score) in idf_df.iterrows():
+        if word in counts_df.word.values:
+            top_neg_words.append(word)
+            top_importance.append(score)
+        if len(top_neg_words) == k:
+            break
+    return pd.DataFrame({'words': top_neg_words, 'importance': top_importance})
+
