@@ -53,6 +53,24 @@ def plot_top_k_words_per_sentiment(corpus: pd.Series, labels: pd.Series, k: int 
         axes[axe_index].set_title(f'Most important words related to sentiment : {sentiment.upper()}')
 
 
+def plot_top_k_words_in_corpus(corpus: [str], k: int = 1):
+    fig, axes = plt.subplots(1, 1, figsize=(20, 10))
+
+    top_k_related_sentiment = get_top_n_words(corpus, k=k)
+    # Ploting figures
+    top_k_words = top_k_related_sentiment['words'].values
+    top_k_words_position = top_k_related_sentiment.index.to_list()
+    top_k_importance = top_k_related_sentiment['importance'].values
+    axes.barh(top_k_words_position,
+                         top_k_importance,
+                         align='center')
+    axes.set_yticks(top_k_words_position)
+    axes.set_yticklabels(top_k_words)
+    axes.invert_yaxis()
+    axes.set_xlabel('Importance')
+    axes.set_title(f'Most important words')
+
+
 def plot_top_k_words_per_sentiment_tfidf(corpus: pd.Series, labels: pd.Series, k: int = 1):
     fig, axes = plt.subplots(1, 3, figsize=(20, 10))
 
